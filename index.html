@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory des Souvenirs de l'Année</title>
+    <style>
+
+.music-btn {
+    background: rgba(197, 160, 89, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 15px;
+    padding: 4px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.music-btn:hover {
+    background-color: var(--gold);
+    color: var(--bg-color);
+}
+        :root {
+            --bg-color: #0E5A46;       /* Vert sapin profond */
+            --card-back: #5C1D24;      /* Bordeaux profond */
+            --gold: #C5A059;           /* Or brossé */
+            --text-light: #fdfbf7;     /* Blanc cassé */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, #264b3e 0%, #11241d 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--gold);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 720px;
+            width: 100%;
+            perspective: 1000px;
+        }
+
+        .card {
+            aspect-ratio: 1 / 1;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+
+        .card.flipped, .card.matched {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched {
+            cursor: default;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, var(--card-back), #5e1812);
+            border: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .card-front::after {
+            content: "🎄";
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #fff;
+            border: 3px solid var(--text-light);
+        }
+
+        .card.matched .card-back {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+
+        .card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Bandeau de légende caché par défaut, révélé quand la paire est trouvée */
+        .card-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(17, 36, 29, 0.95) 0%, rgba(17, 36, 29, 0.75) 75%, transparent 100%);
+            color: var(--text-light);
+            padding: 18px 8px 8px 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .card.matched .card-caption {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .victory-banner {
+            display: none;
+            margin-top: 25px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .victory-banner h2 {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        button.restart-btn {
+            margin-top: 12px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--bg-color);
+            background-color: var(--gold);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button.restart-btn:hover {
+            transform: scale(1.05);
+            background-color: #e5c158;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 550px) {
+            .game-board { gap: 8px; }
+            h1 { font-size: 1.5rem; }
+            .card-caption { font-size: 0.72rem; padding: 12px 4px 4px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+      <h1>✨ Rétrospective de l'Année ✨</h1>
+    <div class="stats">
+        <span>Coups : <strong id="moves">0</strong></span>
+        <span>Paires trouvées : <strong id="pairs">0</strong> / <strong id="total-pairs">8</strong></span>
+        <button type="button" id="music-toggle" class="music-btn" aria-pressed="false">🔇 Musique</button>
+    </div>
+
+    </header>
+
+    <div class="game-board" id="game-board"></div>
+
+    <div class="victory-banner" id="victory-banner">
+        <h2>🎉 Bravo ! Tous les souvenirs ont été retrouvés ! 🎉</h2>
+        <p id="final-stats"></p>
+        <button class="restart-btn" onclick="initGame()">Rejouer</button>
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIGURATION DES PHOTOS ET LÉGENDES (À PERSONNALISER)
+        // ============================================================
+        const DOSSIER_IMAGES = "images/";
+
+        const SOUVENIRS = [
+            { fichier: "photo1.jpg", legende: "Le père Noël de la Valentine" },
+            { fichier: "photo2.jpg", legende: "Sapin de Noël des enfants" },
+            { fichier: "photo3.jpg", legende: "Les sportifs de la Valentine" },
+            { fichier: "photo4.jpg", legende: "Un matin au brief" },
+            { fichier: "photo5.jpg", legende: "Crêpe party à la valentine" },
+            { fichier: "photo6.jpg", legende: "Sapin de Noël des adultes" },
+            { fichier: "photo7.jpg", legende: "ELD de la Valentine" },
+            { fichier: "photo8.jpg", legende: "Repas partagé à La Valentine" }
+        ];
+        // ============================================================
+
+        const board = document.getElementById('game-board');
+        const movesDisplay = document.getElementById('moves');
+        const pairsDisplay = document.getElementById('pairs');
+        const totalPairsDisplay = document.getElementById('total-pairs');
+        const victoryBanner = document.getElementById('victory-banner');
+        const finalStats = document.getElementById('final-stats');
+
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let lockBoard = false;
+
+        function initGame() {
+            board.innerHTML = '';
+            victoryBanner.style.display = 'none';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            lockBoard = false;
+
+            const nombreDePaires = SOUVENIRS.length;
+            movesDisplay.textContent = moves;
+            pairsDisplay.textContent = matchedPairs;
+            totalPairsDisplay.textContent = nombreDePaires;
+
+            // Duplication de chaque souvenir pour créer les paires
+            let deck = [...SOUVENIRS, ...SOUVENIRS];
+
+            // Mélange aléatoire (Algorithme de Fisher-Yates)
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+
+            // Création des cartes HTML
+            deck.forEach((item) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.id = item.fichier;
+
+                card.innerHTML = `
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back">
+                        <img src="${DOSSIER_IMAGES}${item.fichier}" alt="${item.legende}">
+                        <div class="card-caption">${item.legende}</div>
+                    </div>
+                `;
+
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === flippedCards[0]) return;
+            if (this.classList.contains('matched')) return;
+
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesDisplay.textContent = moves;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.id === card2.dataset.id;
+
+            if (isMatch) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                flippedCards = [];
+                matchedPairs++;
+                pairsDisplay.textContent = matchedPairs;
+
+                if (matchedPairs === SOUVENIRS.length) {
+                    setTimeout(() => {
+                        finalStats.textContent = `Vous avez complété la rétrospective en ${moves} coups.`;
+                        victoryBanner.style.display = 'block';
+                    }, 600);
+                }
+            } else {
+                lockBoard = true;
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 1000);
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

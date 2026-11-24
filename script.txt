@@ -1,0 +1,44 @@
+// ============================================================
+// CONFIGURATION MUSIQUE DE FOND
+// ============================================================
+const FICHIER_MUSIQUE = "audio/musique-noel.mp3"; // Adapte le chemin selon ton fichier
+const bgMusic = new Audio(FICHIER_MUSIQUE);
+bgMusic.loop = true;
+bgMusic.volume = 0.35; // Volume de 0.0 à 1.0 (35% conseillé en fond)
+
+const musicToggleBtn = document.getElementById('music-toggle');
+let musicStartedByInteraction = false;
+
+function updateMusicButton(isPlaying) {
+    musicToggleBtn.textContent = isPlaying ? "🔊 Musique" : "🔇 Musique";
+    musicToggleBtn.setAttribute("aria-pressed", String(isPlaying));
+}
+
+function toggleMusic() {
+    if (bgMusic.paused) {
+        bgMusic.play().then(() => {
+            updateMusicButton(true);
+        }).catch(() => {
+            updateMusicButton(false);
+        });
+    } else {
+        bgMusic.pause();
+        updateMusicButton(false);
+    }
+}
+
+musicToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    musicStartedByInteraction = true;
+    toggleMusic();
+});
+
+// Démarre automatiquement au premier clic sur la page si pas encore lancé
+document.addEventListener('click', () => {
+    if (!musicStartedByInteraction && bgMusic.paused) {
+        musicStartedByInteraction = true;
+        bgMusic.play().then(() => {
+            updateMusicButton(true);
+        }).catch(() => {});
+    }
+}, { once: true });
