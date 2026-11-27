@@ -6,10 +6,10 @@
   <title>Memory des Souvenirs de l'Année</title>
   <style>
     :root {
-      --bg-color: #0E5A46; /* Vert sapin profond */
-      --card-back: #5C1D24; /* Bordeaux profond */
-      --gold: #C5A059; /* Or brossé */
-      --text-light: #fdfbf7; /* Blanc cassé */
+      --bg-color: #0E5A46;
+      --card-back: #5C1D24;
+      --gold: #C5A059;
+      --text-light: #fdfbf7;
     }
 
     * {
@@ -21,7 +21,18 @@
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
-      background-image: radial-gradient(circle at center, #264b3e 0%, #11241d 100%);
+      /* Charge automatiquement fond-noel quel que soit son format (.jpg, .png, .jpeg, .webp) */
+      background-image:
+        linear-gradient(rgba(14, 42, 33, 0.45), rgba(14, 42, 33, 0.65)),
+        url('images/fond-noel.jpg'),
+        url('images/fond-noel.png'),
+        url('images/fond-noel.jpeg'),
+        url('images/fond-noel.webp'),
+        url('images/fond-noel.JPG'),
+        url('images/fond-noel.PNG'),
+        url('fond-noel.jpg'),
+        url('fond-noel.png'),
+        radial-gradient(circle at center, #264b3e 0%, #11241d 100%);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -43,7 +54,7 @@
     h1 {
       font-size: 2rem;
       color: var(--gold);
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
       margin-bottom: 8px;
     }
 
@@ -53,8 +64,7 @@
       gap: 20px;
       justify-content: center;
       font-size: 1.1rem;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.5);
       padding: 8px 20px;
       border-radius: 20px;
       border: 1px solid rgba(212, 175, 55, 0.4);
@@ -130,9 +140,6 @@
       transform: rotateY(180deg);
       background-color: #1c382e;
       border: 3px solid var(--text-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .card.matched .card-back {
@@ -145,12 +152,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-    }
-
-    .card-back.img-missing::before {
-      content: "🖼️";
-      font-size: 2rem;
-      opacity: 0.6;
     }
 
     .card-caption {
@@ -181,7 +182,6 @@
       margin-top: 25px;
       text-align: center;
       background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
       padding: 20px 30px;
       border-radius: 15px;
       border: 2px solid var(--gold);
@@ -245,11 +245,9 @@
 
   <script>
     // ============================================================
-    // CONFIGURATION DES PHOTOS, LÉGENDES ET MUSIQUE
-    // (Inutile de préciser l'extension : tous les formats sont testés)
+    // CONFIGURATION
     // ============================================================
     const DOSSIER_IMAGES = "images/";
-    const IMAGE_FOND = "fond-noel";
     const FICHIER_MUSIQUE = "audio/musique-noel.mp3";
 
     const SOUVENIRS = [
@@ -264,94 +262,33 @@
     ];
 
     // ============================================================
-    // DÉTECTION AUTOMATIQUE DU FORMAT D'IMAGE
+    // CHARGEMENT MULTI-FORMAT DES PHOTOS DES CARTES
     // ============================================================
-    const EXTENSIONS_IMAGES = [
-      'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'bmp',
-      'JPG', 'JPEG', 'PNG', 'WEBP', 'GIF', 'AVIF', 'BMP'
-    ];
-    const cacheExtensions = {};
+    const FORMATS = ["jpg", "png", "jpeg", "webp", "JPG", "PNG", "JPEG", "WEBP"];
 
-    function preparerCandidates(nomFichier) {
-      const matchExt = nomFichier.match(/\.([^/.]+)$/);
-      const nomBase = matchExt ? nomFichier.slice(0, -matchExt[0].length) : nomFichier;
-      const extInitiale = matchExt ? matchExt[1] : null;
-
-      const liste = [];
-      if (cacheExtensions[nomBase]) {
-        liste.push(cacheExtensions[nomBase]);
+    function chargerPhoto(img, nomSansExt) {
+      let i = 0;
+      function essayer() {
+        if (i >= FORMATS.length) return;
+        const ext = FORMATS[i++];
+        img.onerror = essayer;
+        img.src = DOSSIER_IMAGES + nomSansExt + "." + ext;
       }
-      if (extInitiale && !liste.includes(extInitiale)) {
-        liste.push(extInitiale);
-      }
-      EXTENSIONS_IMAGES.forEach((ext) => {
-        if (!liste.includes(ext)) {
-          liste.push(ext);
-        }
-      });
-
-      return { nomBase, liste };
+      essayer();
     }
-
-    function chargerImageCarte(imgElement, dossier, nomFichier) {
-      const { nomBase, liste } = preparerCandidates(nomFichier);
-      let index = 0;
-
-      function tenterSuivante() {
-        if (index >= liste.length) {
-          imgElement.style.display = 'none';
-          imgElement.parentElement.classList.add('img-missing');
-          return;
-        }
-        const ext = liste[index++];
-        imgElement.onload = () => {
-          cacheExtensions[nomBase] = ext;
-          imgElement.onerror = null;
-        };
-        imgElement.onerror = tenterSuivante;
-        imgElement.src = `${dossier}${nomBase}.${ext}`;
-      }
-
-      tenterSuivante();
-    }
-
-    function chargerImageDeFond(dossier, nomFichier) {
-      const { nomBase, liste } = preparerCandidates(nomFichier);
-      let index = 0;
-
-      function tenterSuivante() {
-        if (index >= liste.length) return;
-        const ext = liste[index++];
-        const chemin = `${dossier}${nomBase}.${ext}`;
-        const testImg = new Image();
-
-        testImg.onload = () => {
-          cacheExtensions[nomBase] = ext;
-          document.body.style.backgroundImage =
-            `linear-gradient(rgba(14, 42, 33, 0.55), rgba(14, 42, 33, 0.72)), url('${chemin}')`;
-        };
-        testImg.onerror = tenterSuivante;
-        testImg.src = chemin;
-      }
-
-      tenterSuivante();
-    }
-
-    // Chargement automatique de l'image de fond
-    chargerImageDeFond(DOSSIER_IMAGES, IMAGE_FOND);
 
     // ============================================================
-    // MOTEUR AUDIO (CLIC + CLOCHE DE NOËL)
+    // EFFETS SONORES (CLIC + CLOCHE DE NOËL)
     // ============================================================
     let audioCtx = null;
 
-    function withAudioContext(callback) {
+    function jouerSon(callback) {
       try {
         if (!audioCtx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          audioCtx = new AudioContextClass();
+          const AC = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AC();
         }
-        if (audioCtx.state === 'suspended') {
+        if (audioCtx.state === "suspended") {
           audioCtx.resume().then(() => callback(audioCtx)).catch(() => {});
         } else {
           callback(audioCtx);
@@ -360,90 +297,44 @@
     }
 
     function playCardClickSound() {
-      withAudioContext((ctx) => {
+      jouerSon((ctx) => {
         const now = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-
-        osc.type = 'triangle';
+        osc.type = "triangle";
         osc.frequency.setValueAtTime(340, now);
-        osc.frequency.exponentialRampToValueAtTime(580, now + 0.09);
-
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.085);
         gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(0.25, now + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
+        gain.gain.linearRampToValueAtTime(0.22, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
         osc.connect(gain);
         gain.connect(ctx.destination);
-
         osc.start(now);
-        osc.stop(now + 0.13);
+        osc.stop(now + 0.12);
       });
     }
 
     function playChristmasBellSound() {
-      withAudioContext((ctx) => {
+      jouerSon((ctx) => {
         const now = ctx.currentTime;
-
         const notes = [
-          { freq: 1318.5, start: 0, duration: 0.95 },
-          { freq: 1661.2, start: 0.15, duration: 1.15 }
+          { freq: 1318.5, start: 0, duration: 0.9 },
+          { freq: 1661.2, start: 0.14, duration: 1.1 }
         ];
-
         notes.forEach(({ freq, start, duration }) => {
-          const partials = [
-            { ratio: 1, volume: 0.30 },
-            { ratio: 2, volume: 0.14 },
-            { ratio: 2.756, volume: 0.08 },
-            { ratio: 4.07, volume: 0.05 }
-          ];
-
-          partials.forEach(({ ratio, volume }) => {
+          [1, 2, 2.756].forEach((ratio, idx) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-
-            osc.type = 'sine';
+            osc.type = "sine";
             osc.frequency.setValueAtTime(freq * ratio, now + start);
-
             gain.gain.setValueAtTime(0.0001, now + start);
-            gain.gain.linearRampToValueAtTime(volume, now + start + 0.01);
+            gain.gain.linearRampToValueAtTime(0.28 / (idx + 1), now + start + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + start + duration / ratio);
-
             osc.connect(gain);
             gain.connect(ctx.destination);
-
             osc.start(now + start);
             osc.stop(now + start + duration);
           });
-        });
-
-        const bufferSize = Math.floor(ctx.sampleRate * 0.35);
-        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-
-        [0.02, 0.13, 0.24].forEach((offset) => {
-          const noise = ctx.createBufferSource();
-          noise.buffer = noiseBuffer;
-
-          const filter = ctx.createBiquadFilter();
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(6800, now + offset);
-          filter.Q.setValueAtTime(5, now + offset);
-
-          const jingleGain = ctx.createGain();
-          jingleGain.gain.setValueAtTime(0.0001, now + offset);
-          jingleGain.gain.linearRampToValueAtTime(0.14, now + offset + 0.01);
-          jingleGain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.11);
-
-          noise.connect(filter);
-          filter.connect(jingleGain);
-          jingleGain.connect(ctx.destination);
-
-          noise.start(now + offset);
-          noise.stop(now + offset + 0.12);
         });
       });
     }
@@ -455,130 +346,90 @@
     bgMusic.loop = true;
     bgMusic.volume = 0.35;
 
-    const musicToggleBtn = document.getElementById('music-toggle');
-    let musicStartedByInteraction = false;
-    let isMusicPlaying = false;
-    let mp3Available = true;
+    const musicToggleBtn = document.getElementById("music-toggle");
+    let musicStarted = false;
+    let isPlaying = false;
     let fallbackTimer = null;
     let noteIndex = 0;
 
-    const JINGLE_BELLS = [
+    const MELODIE_NOEL = [
       [659.25, 1], [659.25, 1], [659.25, 2],
       [659.25, 1], [659.25, 1], [659.25, 2],
-      [659.25, 1], [783.99, 1], [523.25, 1.5], [587.33, 0.5], [659.25, 4],
-      [698.46, 1], [698.46, 1], [698.46, 1.5], [698.46, 0.5],
-      [698.46, 1], [659.25, 1], [659.25, 1], [659.25, 0.5], [659.25, 0.5],
-      [659.25, 1], [587.33, 1], [587.33, 1], [659.25, 1], [587.33, 2], [783.99, 2]
+      [659.25, 1], [783.99, 1], [523.25, 1.5], [587.33, 0.5], [659.25, 4]
     ];
 
-    function playMusicBoxNote(freq, durationSec) {
-      withAudioContext((ctx) => {
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+    function lancerBoiteAMusique() {
+      if (isPlaying) return;
+      isPlaying = true;
+      musicToggleBtn.textContent = "🔊 Musique";
+      musicToggleBtn.setAttribute("aria-pressed", "true");
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
+      function noteSuivante() {
+        if (!isPlaying) return;
+        const [freq, temps] = MELODIE_NOEL[noteIndex];
+        const dureeMs = temps * 350;
+        jouerSon((ctx) => {
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.08, now + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + dureeMs / 1000);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + dureeMs / 1000);
+        });
+        noteIndex = (noteIndex + 1) % MELODIE_NOEL.length;
+        fallbackTimer = setTimeout(noteSuivante, dureeMs);
+      }
+      noteSuivante();
+    }
 
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSec * 0.95);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + durationSec);
+    function demarrerMusique() {
+      if (isPlaying) return;
+      bgMusic.play().then(() => {
+        isPlaying = true;
+        musicToggleBtn.textContent = "🔊 Musique";
+        musicToggleBtn.setAttribute("aria-pressed", "true");
+      }).catch(() => {
+        lancerBoiteAMusique();
       });
     }
 
-    function scheduleNextNote() {
-      if (!isMusicPlaying) return;
-      const [freq, beats] = JINGLE_BELLS[noteIndex];
-      const stepMs = beats * 360;
-      playMusicBoxNote(freq, stepMs / 1000);
-      noteIndex = (noteIndex + 1) % JINGLE_BELLS.length;
-      fallbackTimer = setTimeout(scheduleNextNote, stepMs);
-    }
-
-    function startFallbackMusic() {
-      if (isMusicPlaying) return;
-      isMusicPlaying = true;
-      updateMusicButton(true);
-      scheduleNextNote();
-    }
-
-    function stopFallbackMusic() {
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer);
-        fallbackTimer = null;
-      }
-    }
-
-    bgMusic.addEventListener('error', () => {
-      mp3Available = false;
-      if (musicStartedByInteraction && !isMusicPlaying) {
-        startFallbackMusic();
-      }
-    });
-
-    function updateMusicButton(playing) {
-      musicToggleBtn.textContent = playing ? "🔊 Musique" : "🔇 Musique";
-      musicToggleBtn.setAttribute("aria-pressed", String(playing));
-    }
-
-    function startMusic() {
-      if (isMusicPlaying) return;
-      if (mp3Available && !bgMusic.error) {
-        bgMusic.play().then(() => {
-          isMusicPlaying = true;
-          updateMusicButton(true);
-        }).catch(() => {
-          mp3Available = false;
-          startFallbackMusic();
-        });
-      } else {
-        startFallbackMusic();
-      }
-    }
-
-    function stopMusic() {
+    function arreterMusique() {
       bgMusic.pause();
-      stopFallbackMusic();
-      isMusicPlaying = false;
-      updateMusicButton(false);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      isPlaying = false;
+      musicToggleBtn.textContent = "🔇 Musique";
+      musicToggleBtn.setAttribute("aria-pressed", "false");
     }
 
-    function toggleMusic() {
-      if (isMusicPlaying) {
-        stopMusic();
-      } else {
-        startMusic();
-      }
-    }
-
-    musicToggleBtn.addEventListener('click', (e) => {
+    musicToggleBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      musicStartedByInteraction = true;
-      toggleMusic();
+      musicStarted = true;
+      if (isPlaying) arreterMusique();
+      else demarrerMusique();
     });
 
-    document.addEventListener('click', () => {
-      if (!musicStartedByInteraction) {
-        musicStartedByInteraction = true;
-        startMusic();
+    document.addEventListener("click", () => {
+      if (!musicStarted) {
+        musicStarted = true;
+        demarrerMusique();
       }
     }, { once: true });
 
     // ============================================================
     // LOGIQUE DU JEU DE MEMORY
     // ============================================================
-    const board = document.getElementById('game-board');
-    const movesDisplay = document.getElementById('moves');
-    const pairsDisplay = document.getElementById('pairs');
-    const totalPairsDisplay = document.getElementById('total-pairs');
-    const victoryBanner = document.getElementById('victory-banner');
-    const finalStats = document.getElementById('final-stats');
+    const board = document.getElementById("game-board");
+    const movesDisplay = document.getElementById("moves");
+    const pairsDisplay = document.getElementById("pairs");
+    const totalPairsDisplay = document.getElementById("total-pairs");
+    const victoryBanner = document.getElementById("victory-banner");
+    const finalStats = document.getElementById("final-stats");
 
     let flippedCards = [];
     let matchedPairs = 0;
@@ -586,42 +437,40 @@
     let lockBoard = false;
 
     function initGame() {
-      board.innerHTML = '';
-      victoryBanner.style.display = 'none';
+      board.innerHTML = "";
+      victoryBanner.style.display = "none";
       flippedCards = [];
       matchedPairs = 0;
       moves = 0;
       lockBoard = false;
 
-      const nombreDePaires = SOUVENIRS.length;
       movesDisplay.textContent = moves;
       pairsDisplay.textContent = matchedPairs;
-      totalPairsDisplay.textContent = nombreDePaires;
+      totalPairsDisplay.textContent = SOUVENIRS.length;
 
-      let deck = [...SOUVENIRS, ...SOUVENIRS];
-
+      const deck = [...SOUVENIRS, ...SOUVENIRS];
       for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
       }
 
       deck.forEach((item) => {
-        const card = document.createElement('div');
-        card.classList.add('card');
+        const card = document.createElement("div");
+        card.className = "card";
         card.dataset.id = item.fichier;
 
-        const front = document.createElement('div');
-        front.className = 'card-face card-front';
+        const front = document.createElement("div");
+        front.className = "card-face card-front";
 
-        const back = document.createElement('div');
-        back.className = 'card-face card-back';
+        const back = document.createElement("div");
+        back.className = "card-face card-back";
 
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.alt = item.legende;
-        chargerImageCarte(img, DOSSIER_IMAGES, item.fichier);
+        chargerPhoto(img, item.fichier);
 
-        const caption = document.createElement('div');
-        caption.className = 'card-caption';
+        const caption = document.createElement("div");
+        caption.className = "card-caption";
         caption.textContent = item.legende;
 
         back.appendChild(img);
@@ -629,7 +478,7 @@
         card.appendChild(front);
         card.appendChild(back);
 
-        card.addEventListener('click', flipCard);
+        card.addEventListener("click", flipCard);
         board.appendChild(card);
       });
     }
@@ -637,10 +486,10 @@
     function flipCard() {
       if (lockBoard) return;
       if (this === flippedCards[0]) return;
-      if (this.classList.contains('matched')) return;
+      if (this.classList.contains("matched")) return;
 
       playCardClickSound();
-      this.classList.add('flipped');
+      this.classList.add("flipped");
       flippedCards.push(this);
 
       if (flippedCards.length === 2) {
@@ -651,4 +500,35 @@
     }
 
     function checkForMatch() {
-      const [card
+      const [card1, card2] = flippedCards;
+      const isMatch = card1.dataset.id === card2.dataset.id;
+
+      if (isMatch) {
+        playChristmasBellSound();
+        card1.classList.add("matched");
+        card2.classList.add("matched");
+        flippedCards = [];
+        matchedPairs++;
+        pairsDisplay.textContent = matchedPairs;
+
+        if (matchedPairs === SOUVENIRS.length) {
+          setTimeout(() => {
+            finalStats.textContent = `Vous avez complété la rétrospective en ${moves} coups.`;
+            victoryBanner.style.display = "block";
+          }, 600);
+        }
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          card1.classList.remove("flipped");
+          card2.classList.remove("flipped");
+          flippedCards = [];
+          lockBoard = false;
+        }, 1000);
+      }
+    }
+
+    initGame();
+  </script>
+</body>
+</html>
