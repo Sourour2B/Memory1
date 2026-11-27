@@ -1,400 +1,508 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory des Souvenirs de l'Année</title>
-    <style>
-        .music-btn {
-            background: rgba(197, 160, 89, 0.2);
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            border-radius: 15px;
-            padding: 4px 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory des Souvenirs de l'Année</title>
+  <style>
+    :root {
+      --bg-color: #0E5A46; /* Vert sapin profond */
+      --card-back: #5C1D24; /* Bordeaux profond */
+      --gold: #C5A059; /* Or brossé */
+      --text-light: #fdfbf7; /* Blanc cassé */
+    }
 
-        .music-btn:hover {
-            background-color: var(--gold);
-            color: var(--bg-color);
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        :root {
-            --bg-color: #0E5A46;       /* Vert sapin profond */
-            --card-back: #5C1D24;      /* Bordeaux profond */
-            --gold: #C5A059;           /* Or brossé */
-            --text-light: #fdfbf7;     /* Blanc cassé */
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      background-image: 
+        linear-gradient(rgba(14, 42, 33, 0.55), rgba(14, 42, 33, 0.72)),
+        url('images/fond-noel.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, #264b3e 0%, #11241d 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+    h1 {
+      font-size: 2rem;
+      color: var(--gold);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      margin-bottom: 8px;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+    }
 
-        h1 {
-            font-size: 2rem;
-            color: var(--gold);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            margin-bottom: 8px;
-        }
+    .music-btn {
+      background: rgba(197, 160, 89, 0.2);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 15px;
+      padding: 4px 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
 
-        .stats {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            font-size: 1.1rem;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
+    .music-btn:hover {
+      background-color: var(--gold);
+      color: var(--bg-color);
+    }
 
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            max-width: 720px;
-            width: 100%;
-            perspective: 1000px;
-        }
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      max-width: 720px;
+      width: 100%;
+      perspective: 1000px;
+    }
 
-        .card {
-            aspect-ratio: 1 / 1;
-            position: relative;
-            cursor: pointer;
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-        }
+    .card {
+      aspect-ratio: 1 / 1;
+      position: relative;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
 
-        .card.flipped, .card.matched {
-            transform: rotateY(180deg);
-        }
+    .card.flipped, .card.matched {
+      transform: rotateY(180deg);
+    }
 
-        .card.matched {
-            cursor: default;
-        }
+    .card.matched {
+      cursor: default;
+    }
 
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-            overflow: hidden;
-        }
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+    }
 
-        .card-front {
-            background: linear-gradient(135deg, var(--card-back), #5e1812);
-            border: 2px solid var(--gold);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-        }
+    .card-front {
+      background: linear-gradient(135deg, var(--card-back), #5e1812);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
 
-        .card-front::after {
-            content: "🎄";
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
+    .card-front::after {
+      content: "🎄";
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
 
-        .card-back {
-            transform: rotateY(180deg);
-            background-color: #11241d; /* Fond sombre élégant pour les bandes des photos portrait/paysage */
-            border: 3px solid var(--text-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .card-back {
+      transform: rotateY(180deg);
+      background-color: #fff;
+      border: 3px solid var(--text-light);
+    }
 
-        .card.matched .card-back {
-            border-color: var(--gold);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
-        }
+    .card.matched .card-back {
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.7);
+    }
 
-        .card-back img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Affiche la photo entière (portrait, paysage ou carré) sans la couper */
-            display: block;
-        }
+    .card-back img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-        /* Bandeau de légende caché par défaut, révélé quand la paire est trouvée */
-        .card-caption {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(17, 36, 29, 0.95) 0%, rgba(17, 36, 29, 0.75) 75%, transparent 100%);
-            color: var(--text-light);
-            padding: 18px 8px 8px 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.2;
-            opacity: 0;
-            transform: translateY(100%);
-            transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
+    .card-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(17, 36, 29, 0.95) 0%, rgba(17, 36, 29, 0.75) 75%, transparent 100%);
+      color: var(--text-light);
+      padding: 18px 8px 8px 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.2;
+      opacity: 0;
+      transform: translateY(100%);
+      transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
 
-        .card.matched .card-caption {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .card.matched .card-caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-        .victory-banner {
-            display: none;
-            margin-top: 25px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 20px 30px;
-            border-radius: 15px;
-            border: 2px solid var(--gold);
-            animation: fadeIn 0.5s ease-in-out;
-        }
+    .victory-banner {
+      display: none;
+      margin-top: 25px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      padding: 20px 30px;
+      border-radius: 15px;
+      border: 2px solid var(--gold);
+      animation: fadeIn 0.5s ease-in-out;
+    }
 
-        .victory-banner h2 {
-            color: var(--gold);
-            margin-bottom: 10px;
-        }
+    .victory-banner h2 {
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
 
-        button.restart-btn {
-            margin-top: 12px;
-            padding: 10px 24px;
-            font-size: 1rem;
-            font-weight: bold;
-            color: var(--bg-color);
-            background-color: var(--gold);
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
+    button.restart-btn {
+      margin-top: 12px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--bg-color);
+      background-color: var(--gold);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
 
-        button.restart-btn:hover {
-            transform: scale(1.05);
-            background-color: #e5c158;
-        }
+    button.restart-btn:hover {
+      transform: scale(1.05);
+      background-color: #e5c158;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        @media (max-width: 550px) {
-            .game-board { gap: 8px; }
-            h1 { font-size: 1.5rem; }
-            .card-caption { font-size: 0.72rem; padding: 12px 4px 4px 4px; }
-        }
-    </style>
+    @media (max-width: 550px) {
+      .game-board { gap: 8px; }
+      h1 { font-size: 1.5rem; }
+      .stats { flex-wrap: wrap; gap: 10px; font-size: 0.95rem; }
+      .card-caption { font-size: 0.72rem; padding: 12px 4px 4px 4px; }
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>✨ Rétrospective de l'Année ✨</h1>
-        <div class="stats">
-            <span>Coups : <strong id="moves">0</strong></span>
-            <span>Paires trouvées : <strong id="pairs">0</strong> / <strong id="total-pairs">8</strong></span>
-            <button type="button" id="music-toggle" class="music-btn" aria-pressed="false">🔇 Musique</button>
-        </div>
-    </header>
-
-    <div class="game-board" id="game-board"></div>
-
-    <div class="victory-banner" id="victory-banner">
-        <h2>🎉 Bravo ! Tous les souvenirs ont été retrouvés ! 🎉</h2>
-        <p id="final-stats"></p>
-        <button class="restart-btn" onclick="initGame()">Rejouer</button>
+  <header>
+    <h1>✨ Rétrospective de l'Année ✨</h1>
+    <div class="stats">
+      <span>Coups : <strong id="moves">0</strong></span>
+      <span>Paires trouvées : <strong id="pairs">0</strong> / <strong id="total-pairs">8</strong></span>
+      <button type="button" id="music-toggle" class="music-btn" aria-pressed="false">🔇 Musique</button>
     </div>
+  </header>
 
-    <script>
-        // ============================================================
-        // CONFIGURATION DES PHOTOS ET LÉGENDES (À PERSONNALISER)
-        // ============================================================
-        const DOSSIER_IMAGES = "images/";
+  <div class="game-board" id="game-board"></div>
 
-        // Extensions testées automatiquement dans l'ordre si le nom est écrit sans extension
-        const EXTENSIONS_SUPPORTEES = [
-            "jpg", "jpeg", "png", "webp", "gif", "avif", "svg",
-            "JPG", "JPEG", "PNG", "WEBP"
+  <div class="victory-banner" id="victory-banner">
+    <h2>🎉 Bravo ! Tous les souvenirs ont été retrouvés ! 🎉</h2>
+    <p id="final-stats"></p>
+    <button class="restart-btn" onclick="initGame()">Rejouer</button>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION DES PHOTOS ET LÉGENDES (À PERSONNALISER)
+    // ============================================================
+    const DOSSIER_IMAGES = "images/";
+
+    const SOUVENIRS = [
+      { fichier: "photo1.jpg", legende: "Le père Noël de la Valentine" },
+      { fichier: "photo2.jpg", legende: "Sapin de Noël des enfants" },
+      { fichier: "photo3.jpg", legende: "Les sportifs de la Valentine" },
+      { fichier: "photo4.jpg", legende: "Un matin au brief" },
+      { fichier: "photo5.jpg", legende: "Crêpe party à la valentine" },
+      { fichier: "photo6.jpg", legende: "Sapin de Noël des adultes" },
+      { fichier: "photo7.jpg", legende: "ELD de la Valentine" },
+      { fichier: "photo8.jpg", legende: "Repas partagé à La Valentine" }
+    ];
+
+    // ============================================================
+    // EFFETS SONORES (CLIC + CLOCHE DE NOËL)
+    // ============================================================
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playCardClickSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(340, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.085);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.18, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    function playChristmasBellSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        const notes = [
+          { freq: 1318.5, start: 0, duration: 0.9 },
+          { freq: 1661.2, start: 0.14, duration: 1.1 }
         ];
 
-        // Vous pouvez mettre le nom AVEC extension (ex: "photo1.png")
-        // ou SANS extension (ex: "photo1") pour détection automatique :
-        const SOUVENIRS = [
-            { fichier: "photo1", legende: "Le père Noël de la Valentine" },
-            { fichier: "photo2", legende: "Sapin de Noël des enfants" },
-            { fichier: "photo3", legende: "Les sportifs de la Valentine" },
-            { fichier: "photo4", legende: "Un matin au brief" },
-            { fichier: "photo5", legende: "Crêpe party à la valentine" },
-            { fichier: "photo6", legende: "Sapin de Noël des adultes" },
-            { fichier: "photo7", legende: "ELD de la Valentine" },
-            { fichier: "photo8", legende: "Repas partagé à La Valentine" }
-        ];
-        // ============================================================
+        notes.forEach(({ freq, start, duration }) => {
+          const partials = [
+            { ratio: 1, volume: 0.22 },
+            { ratio: 2, volume: 0.10 },
+            { ratio: 2.756, volume: 0.06 },
+            { ratio: 4.07, volume: 0.04 }
+          ];
 
-        const board = document.getElementById('game-board');
-        const movesDisplay = document.getElementById('moves');
-        const pairsDisplay = document.getElementById('pairs');
-        const totalPairsDisplay = document.getElementById('total-pairs');
-        const victoryBanner = document.getElementById('victory-banner');
-        const finalStats = document.getElementById('final-stats');
+          partials.forEach(({ ratio, volume }) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-        let flippedCards = [];
-        let matchedPairs = 0;
-        let moves = 0;
-        let lockBoard = false;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq * ratio, now + start);
 
-        // Charge l'image en testant automatiquement les différentes extensions possibles
-        function chargerImageAvecFallback(imgElement, nomFichier, legende) {
-            const possedeExtension = /\.[a-zA-Z0-9]+$/.test(nomFichier);
-            const nomBase = possedeExtension
-                ? nomFichier.replace(/\.[^/.]+$/, "")
-                : nomFichier;
+            gain.gain.setValueAtTime(0.0001, now + start);
+            gain.gain.linearRampToValueAtTime(volume, now + start + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + start + duration / ratio);
 
-            // Si une extension est précisée, on la teste en priorité puis on bascule sur les autres
-            const candidats = possedeExtension
-                ? [nomFichier, ...EXTENSIONS_SUPPORTEES.map(ext => `${nomBase}.${ext}`)]
-                : EXTENSIONS_SUPPORTEES.map(ext => `${nomBase}.${ext}`);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
 
-            const listeUnique = [...new Set(candidats)];
-            let index = 0;
+            osc.start(now + start);
+            osc.stop(now + start + duration);
+          });
+        });
 
-            imgElement.alt = legende;
-
-            imgElement.onerror = () => {
-                index++;
-                if (index < listeUnique.length) {
-                    imgElement.src = `${DOSSIER_IMAGES}${listeUnique[index]}`;
-                } else {
-                    imgElement.onerror = null;
-                    console.warn(`Image introuvable pour : ${nomFichier}`);
-                }
-            };
-
-            imgElement.src = `${DOSSIER_IMAGES}${listeUnique[0]}`;
+        const bufferSize = Math.floor(ctx.sampleRate * 0.35);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
         }
 
-        function initGame() {
-            board.innerHTML = '';
-            victoryBanner.style.display = 'none';
-            flippedCards = [];
-            matchedPairs = 0;
-            moves = 0;
-            lockBoard = false;
+        [0.02, 0.12, 0.22].forEach((offset) => {
+          const noise = ctx.createBufferSource();
+          noise.buffer = noiseBuffer;
 
-            const nombreDePaires = SOUVENIRS.length;
-            movesDisplay.textContent = moves;
-            pairsDisplay.textContent = matchedPairs;
-            totalPairsDisplay.textContent = nombreDePaires;
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(6800, now + offset);
+          filter.Q.setValueAtTime(5, now + offset);
 
-            // Duplication de chaque souvenir pour créer les paires
-            let deck = [...SOUVENIRS, ...SOUVENIRS];
+          const jingleGain = ctx.createGain();
+          jingleGain.gain.setValueAtTime(0.0001, now + offset);
+          jingleGain.gain.linearRampToValueAtTime(0.09, now + offset + 0.01);
+          jingleGain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.11);
 
-            // Mélange aléatoire (Algorithme de Fisher-Yates)
-            for (let i = deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deck[i], deck[j]] = [deck[j], deck[i]];
-            }
+          noise.connect(filter);
+          filter.connect(jingleGain);
+          jingleGain.connect(ctx.destination);
 
-            // Création des cartes HTML
-            deck.forEach((item) => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.dataset.id = item.fichier;
+          noise.start(now + offset);
+          noise.stop(now + offset + 0.12);
+        });
+      } catch (e) {}
+    }
 
-                const frontFace = document.createElement('div');
-                frontFace.classList.add('card-face', 'card-front');
+    // ============================================================
+    // CONFIGURATION MUSIQUE DE FOND
+    // ============================================================
+    const FICHIER_MUSIQUE = "audio/musique-noel.mp3";
+    const bgMusic = new Audio(FICHIER_MUSIQUE);
+    bgMusic.loop = true;
+    bgMusic.volume = 0.35;
 
-                const backFace = document.createElement('div');
-                backFace.classList.add('card-face', 'card-back');
+    const musicToggleBtn = document.getElementById('music-toggle');
+    let musicStartedByInteraction = false;
 
-                const img = document.createElement('img');
-                chargerImageAvecFallback(img, item.fichier, item.legende);
+    function updateMusicButton(isPlaying) {
+      musicToggleBtn.textContent = isPlaying ? "🔊 Musique" : "🔇 Musique";
+      musicToggleBtn.setAttribute("aria-pressed", String(isPlaying));
+    }
 
-                const caption = document.createElement('div');
-                caption.classList.add('card-caption');
-                caption.textContent = item.legende;
+    function toggleMusic() {
+      if (bgMusic.paused) {
+        bgMusic.play().then(() => {
+          updateMusicButton(true);
+        }).catch(() => {
+          updateMusicButton(false);
+        });
+      } else {
+        bgMusic.pause();
+        updateMusicButton(false);
+      }
+    }
 
-                backFace.appendChild(img);
-                backFace.appendChild(caption);
-                card.appendChild(frontFace);
-                card.appendChild(backFace);
+    musicToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      musicStartedByInteraction = true;
+      toggleMusic();
+    });
 
-                card.addEventListener('click', flipCard);
-                board.appendChild(card);
-            });
+    document.addEventListener('click', () => {
+      if (!musicStartedByInteraction && bgMusic.paused) {
+        musicStartedByInteraction = true;
+        bgMusic.play().then(() => {
+          updateMusicButton(true);
+        }).catch(() => {});
+      }
+    }, { once: true });
+
+    // ============================================================
+    // LOGIQUE DU JEU DE MEMORY
+    // ============================================================
+    const board = document.getElementById('game-board');
+    const movesDisplay = document.getElementById('moves');
+    const pairsDisplay = document.getElementById('pairs');
+    const totalPairsDisplay = document.getElementById('total-pairs');
+    const victoryBanner = document.getElementById('victory-banner');
+    const finalStats = document.getElementById('final-stats');
+
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let lockBoard = false;
+
+    function initGame() {
+      board.innerHTML = '';
+      victoryBanner.style.display = 'none';
+      flippedCards = [];
+      matchedPairs = 0;
+      moves = 0;
+      lockBoard = false;
+
+      const nombreDePaires = SOUVENIRS.length;
+      movesDisplay.textContent = moves;
+      pairsDisplay.textContent = matchedPairs;
+      totalPairsDisplay.textContent = nombreDePaires;
+
+      let deck = [...SOUVENIRS, ...SOUVENIRS];
+
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+
+      deck.forEach((item) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.id = item.fichier;
+
+        card.innerHTML = `
+          <div class="card-face card-front"></div>
+          <div class="card-face card-back">
+            <img src="${DOSSIER_IMAGES}${item.fichier}" alt="${item.legende}">
+            <div class="card-caption">${item.legende}</div>
+          </div>
+        `;
+
+        card.addEventListener('click', flipCard);
+        board.appendChild(card);
+      });
+    }
+
+    function flipCard() {
+      if (lockBoard) return;
+      if (this === flippedCards[0]) return;
+      if (this.classList.contains('matched')) return;
+
+      playCardClickSound();
+      this.classList.add('flipped');
+      flippedCards.push(this);
+
+      if (flippedCards.length === 2) {
+        moves++;
+        movesDisplay.textContent = moves;
+        checkForMatch();
+      }
+    }
+
+    function checkForMatch() {
+      const [card1, card2] = flippedCards;
+      const isMatch = card1.dataset.id === card2.dataset.id;
+
+      if (isMatch) {
+        playChristmasBellSound();
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        flippedCards = [];
+        matchedPairs++;
+        pairsDisplay.textContent = matchedPairs;
+
+        if (matchedPairs === SOUVENIRS.length) {
+          setTimeout(() => {
+            finalStats.textContent = `Vous avez complété la rétrospective en ${moves} coups.`;
+            victoryBanner.style.display = 'block';
+          }, 600);
         }
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          flippedCards = [];
+          lockBoard = false;
+        }, 1000);
+      }
+    }
 
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === flippedCards[0]) return;
-            if (this.classList.contains('matched')) return;
-
-            this.classList.add('flipped');
-            flippedCards.push(this);
-
-            if (flippedCards.length === 2) {
-                moves++;
-                movesDisplay.textContent = moves;
-                checkForMatch();
-            }
-        }
-
-        function checkForMatch() {
-            const [card1, card2] = flippedCards;
-            const isMatch = card1.dataset.id === card2.dataset.id;
-
-            if (isMatch) {
-                card1.classList.add('matched');
-                card2.classList.add('matched');
-                flippedCards = [];
-                matchedPairs++;
-                pairsDisplay.textContent = matchedPairs;
-
-                if (matchedPairs === SOUVENIRS.length) {
-                    setTimeout(() => {
-                        finalStats.textContent = `Vous avez complété la rétrospective en ${moves} coups.`;
-                        victoryBanner.style.display = 'block';
-                    }, 600);
-                }
-            } else {
-                lockBoard = true;
-                setTimeout(() => {
-                    card1.classList.remove('flipped');
-                    card2.classList.remove('flipped');
-                    flippedCards = [];
-                    lockBoard = false;
-                }, 1000);
-            }
-        }
-
-        initGame();
-    </script>
+    initGame();
+  </script>
 </body>
 </html>
